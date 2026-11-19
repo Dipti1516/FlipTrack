@@ -1,6 +1,6 @@
 <div align="center">
   <h1>🎯 FlipTrack</h1>
-  <p><strong>Your Reselling Empire, Tracked in Real Time.</strong></p>
+  <p><strong>Your Universal Reselling Empire, Tracked in Real Time.</strong></p>
   
   <p>
     <a href="https://github.com/rushikesh-bobade/FlipTrack/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
@@ -11,11 +11,11 @@
   </p>
 
   <p>
-    An open-source SaaS platform designed specifically for sneaker, streetwear, and collectibles resellers to manage their inventory, track market prices, and analyze their business using AI. Built for the <strong>Open Source Hackathon by Elite Coders</strong>.
+    An open-source SaaS platform designed for resellers of <strong>any</strong> physical goods (electronics, vintage clothing, collectibles, streetwear, etc.) to manage their inventory, track market prices, and analyze their business using AI. Built to be a world-class, production-grade platform driven by the open-source community.
   </p>
   
   <p>
-    ⭐ <strong>If you find FlipTrack useful or are participating in the hackathon, please consider giving this repository a star! It helps our open-source community grow.</strong> ⭐
+    ⭐ <strong>If you find FlipTrack useful or are participating in a hackathon, please consider giving this repository a star! It helps our open-source community grow.</strong> ⭐
   </p>
 </div>
 
@@ -29,6 +29,7 @@
   - [Prerequisites](#prerequisites)
   - [Local Installation](#local-installation)
   - [Database Setup](#database-setup)
+  - [Local Development (Docker)](#local-development-docker)
 - [Demo Credentials](#-demo-credentials)
 - [Project Structure](#-project-structure)
 - [Contributing](#-contributing)
@@ -103,26 +104,53 @@ Ensure you have the following installed and configured on your machine:
    ```
 
 3. **Configure Environment Variables**
-   Create a `.env` file in the root directory based on `.env.example` (if provided), and populate it:
-   ```env
-   # Supabase Configuration
-   NEXT_PUBLIC_SUPABASE_URL="your_supabase_project_url"
-   NEXT_PUBLIC_SUPABASE_ANON_KEY="your_supabase_anon_key"
-   DATABASE_URL="your_supabase_transaction_pooler_url"
-   DIRECT_URL="your_supabase_session_url"
-   
-   # Groq AI
-   GROQ_API_KEY="your_groq_api_key"
-   ```
+   Create a `.env` file in the root directory by copying `.env.example`.
 
 ### Database Setup
 
-Sync your Prisma schema with your Supabase Postgres instance and generate the Prisma Client:
+You can set up your database using either a free cloud project or a local PostgreSQL instance.
 
-```bash
-npx prisma db push
-npx prisma generate
-```
+**Option A: Cloud Database (Easiest)**
+1. Create a free project on [Supabase](https://supabase.com).
+2. Copy your Project URL, Anon Key, and Database Connection Strings into your `.env` file.
+3. Push the Prisma schema to your cloud database:
+   ```bash
+   npx prisma db push
+   npx prisma generate
+   ```
+
+<a id="local-development-docker"></a>
+### 🐳 Local Development (Docker)
+
+**Option B: Local PostgreSQL via Docker (No Cloud Account Required)**
+
+This is the recommended path for external contributors, since the project's live Supabase `DATABASE_URL` is kept private and cannot be shared. External contributors previously had no way to run `npx prisma migrate dev` locally, which meant maintainers had to generate migrations manually on their behalf. A `docker-compose.yml` is included at the repo root so anyone can spin up an isolated local Postgres instance with one command and generate migrations independently.
+
+1. Make sure [Docker](https://www.docker.com/) is installed and running.
+2. Start the local Postgres container:
+   ```bash
+   docker-compose up -d
+   ```
+   This starts a `postgres:15` container named `fliptrack_postgres`, exposed on `localhost:5432`, with a persistent volume so your data survives restarts.
+3. In your `.env`, set `DATABASE_URL` and `DIRECT_URL` to the local connection string (already provided, commented out, in `.env.example`):
+   ```bash
+   DATABASE_URL="postgresql://postgres:password@localhost:5432/fliptrack_dev"
+   DIRECT_URL="postgresql://postgres:password@localhost:5432/fliptrack_dev"
+   ```
+4. You can leave `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` blank or mock them if you are only testing UI/Prisma logic.
+5. Push the schema and generate migrations, all against your own local database:
+   ```bash
+   npx prisma db push
+   npx prisma generate
+   npx prisma migrate dev --name your-migration-name
+   ```
+6. To stop the container (data is preserved in the Docker volume):
+   ```bash
+   docker-compose down
+   ```
+   To wipe the local database completely, add `-v`: `docker-compose down -v`.
+
+### Start Development Server
 
 Start the Vite development server:
 ```bash
@@ -134,7 +162,7 @@ The application will be running locally at `http://localhost:5173`.
 
 ## 💡 Demo Credentials
 
-Want to test FlipTrack's UI and features without manually creating data? We have included an automated seed script that provisions a test user and sample sneaker inventory.
+Want to test FlipTrack's UI and features without manually creating data? We have included an automated seed script that provisions a test user and sample inventory items.
 
 1. Ensure your development server is running (`npm run dev`).
 2. Execute the demo creation script:
